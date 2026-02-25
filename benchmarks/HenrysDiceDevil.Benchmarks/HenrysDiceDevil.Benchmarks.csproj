@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\HenrysDiceDevil.Domain\HenrysDiceDevil.Domain.csproj" />
+    <ProjectReference Include="..\..\src\HenrysDiceDevil.Infrastructure\HenrysDiceDevil.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\HenrysDiceDevil.Simulation\HenrysDiceDevil.Simulation.csproj" />
+  </ItemGroup>
+
+</Project>
