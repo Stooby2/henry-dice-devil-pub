@@ -1,0 +1,586 @@
+<Window x:Class="HenrysDiceDevil.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:app="clr-namespace:HenrysDiceDevil.App"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="Henry's Dice Devil"
+        Icon="/HenrysDiceDevil.App;component/Assets/henrys_dice_devil_multi.ico"
+        Width="1600"
+        Height="980"
+        MinWidth="1160"
+        MinHeight="700"
+        PreviewKeyDown="MainWindow_OnPreviewKeyDown">
+    <Window.Resources>
+        <app:FlexibleDoubleConverter x:Key="FlexibleDoubleConverter" />
+    </Window.Resources>
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Padding="18,12"
+                CornerRadius="14"
+                Background="{DynamicResource Brush.SurfaceRaised}"
+                BorderBrush="{DynamicResource Brush.Border}"
+                BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock FontSize="24"
+                               FontWeight="SemiBold"
+                               Text="Henry's Dice Devil" />
+                    <TextBlock Margin="0,2,0,0"
+                               Foreground="{DynamicResource Brush.TextSecondary}"
+                               Text="Material command center for KCD2 dice optimization" />
+                </StackPanel>
+
+                <WrapPanel Grid.Column="1"
+                           Margin="20,0,0,0"
+                           VerticalAlignment="Center"
+                           ItemHeight="34">
+                    <Border Margin="0,0,8,0"
+                            Padding="10,6"
+                            CornerRadius="17"
+                            Background="{DynamicResource Brush.Surface}">
+                        <TextBlock Foreground="{DynamicResource Brush.TextSecondary}"
+                                   Text="Ctrl+Enter Optimize" />
+                    </Border>
+                    <Border Margin="0,0,8,0"
+                            Padding="10,6"
+                            CornerRadius="17"
+                            Background="{DynamicResource Brush.Surface}">
+                        <TextBlock Foreground="{DynamicResource Brush.TextSecondary}"
+                                   Text="Esc Cancel" />
+                    </Border>
+                    <Border Padding="10,6"
+                            CornerRadius="17"
+                            Background="{DynamicResource Brush.Surface}">
+                        <TextBlock Foreground="{DynamicResource Brush.TextSecondary}"
+                                   Text="Ctrl+L Find Dice" />
+                    </Border>
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <TabControl x:Name="MainTabControl"
+                    Grid.Row="1"
+                    Margin="0,14,0,0"
+                    TabStripPlacement="Top">
+            <TabItem x:Name="DiceTab" Header="Dice Workspace">
+                <Grid Margin="14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Margin="0,0,12,0"
+                            Padding="12"
+                            CornerRadius="10"
+                            Background="{DynamicResource Brush.Surface}"
+                            BorderBrush="{DynamicResource Brush.Border}"
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="280" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox x:Name="DiceSearchTextBox"
+                                         Grid.Column="0"
+                                         Margin="0,0,12,0"
+                                         materialDesign:HintAssist.Hint="Search dice by name"
+                                         materialDesign:TextFieldAssist.HasClearButton="True"
+                                         ToolTip="Filter the dice list by name. Clearing this shows all dice."
+                                         TextChanged="DiceSearchTextBox_OnTextChanged" />
+
+                                <Button x:Name="OptimizeFromDiceButton"
+                                        Grid.Column="2"
+                                        Margin="8,0,0,0"
+                                        Padding="14,7"
+                                        ToolTip="Start optimization with current dice ownership and run setup."
+                                        Click="OptimizeButton_OnClick"
+                                        Content="_Optimize" />
+
+                                <Button Grid.Column="3"
+                                        Margin="8,0,0,0"
+                                        Padding="14,7"
+                                        ToolTip="Set all owned dice counts to zero."
+                                        Click="ClearAllDiceButton_OnClick"
+                                        Content="_Clear All" />
+
+                                <Button Grid.Column="4"
+                                        Margin="8,0,0,0"
+                                        Padding="14,7"
+                                        ToolTip="Restore owned dice counts from your last saved state."
+                                        Click="ResetDiceToSavedButton_OnClick"
+                                        Content="Reset To _Saved" />
+                            </Grid>
+
+                            <DataGrid x:Name="OwnedDataGrid"
+                                      Grid.Row="1"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      IsReadOnly="False"
+                                      ToolTip="Your dice collection. Use plus/minus in each row to change owned counts."
+                                      EnableRowVirtualization="True"
+                                      EnableColumnVirtualization="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Die" Binding="{Binding Name}" IsReadOnly="True" Width="2*" />
+                                    <DataGridTemplateColumn Header="Owned" Width="170">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <DockPanel LastChildFill="False">
+                                                    <Button Content="-"
+                                                            Width="28"
+                                                            Height="26"
+                                                            Padding="0"
+                                                            Margin="0,0,4,0"
+                                                            ToolTip="Decrease owned count for this die."
+                                                            Tag="{Binding}"
+                                                            Click="DecrementOwnedButton_OnClick" />
+                                                    <TextBlock Width="48"
+                                                               VerticalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               FontFamily="{DynamicResource Font.Numeric}"
+                                                               Text="{Binding OwnedCount}" />
+                                                    <Button Content="+"
+                                                            Width="28"
+                                                            Height="26"
+                                                            Padding="0"
+                                                            Margin="4,0,0,0"
+                                                            ToolTip="Increase owned count for this die."
+                                                            Tag="{Binding}"
+                                                            Click="IncrementOwnedButton_OnClick" />
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="P1" Binding="{Binding P1}" IsReadOnly="True" Width="*" />
+                                    <DataGridTextColumn Header="P2" Binding="{Binding P2}" IsReadOnly="True" Width="*" />
+                                    <DataGridTextColumn Header="P3" Binding="{Binding P3}" IsReadOnly="True" Width="*" />
+                                    <DataGridTextColumn Header="P4" Binding="{Binding P4}" IsReadOnly="True" Width="*" />
+                                    <DataGridTextColumn Header="P5" Binding="{Binding P5}" IsReadOnly="True" Width="*" />
+                                    <DataGridTextColumn Header="P6" Binding="{Binding P6}" IsReadOnly="True" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+
+                    <DockPanel Grid.Column="1"
+                               LastChildFill="False"
+                               HorizontalAlignment="Right">
+                        <ToggleButton x:Name="RunSetupToggleButton"
+                                      Width="34"
+                                      Height="42"
+                                      Margin="0,0,8,0"
+                                      VerticalAlignment="Top"
+                                      IsChecked="True"
+                                      ToolTip="Collapse or expand the quick Run Setup panel.">
+                            <ToggleButton.Style>
+                                <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
+                                    <Setter Property="Foreground" Value="{DynamicResource Brush.TextPrimary}" />
+                                    <Setter Property="Background" Value="{DynamicResource Brush.SurfaceRaised}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource Brush.BorderStrong}" />
+                                    <Setter Property="Content" Value="&#x25B6;" />
+                                    <Style.Triggers>
+                                        <Trigger Property="IsChecked" Value="False">
+                                            <Setter Property="Content" Value="&#x25C0;" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ToggleButton.Style>
+                        </ToggleButton>
+
+                        <Border x:Name="RunSetupPanel"
+                                Width="420"
+                                Padding="14"
+                                CornerRadius="10"
+                                Background="{DynamicResource Brush.Surface}"
+                                BorderBrush="{DynamicResource Brush.Border}"
+                                BorderThickness="1">
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsChecked, ElementName=RunSetupToggleButton}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Text="Run Setup" />
+                            <TextBlock Grid.Row="1"
+                                       Margin="0,3,0,12"
+                                       Foreground="{DynamicResource Brush.TextSecondary}"
+                                       Text="Fast settings for normal runs. Advanced settings are behind Show Advanced." />
+
+                            <StackPanel Grid.Row="2" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Text="Max Score" />
+                                    <TextBlock Grid.Column="1"
+                                               VerticalAlignment="Center"
+                                               FontFamily="{DynamicResource Font.Numeric}"
+                                               Text="{Binding ElementName=TargetScoreSlider, Path=Value, StringFormat=F0}" />
+                                </Grid>
+                                <Slider x:Name="TargetScoreSlider"
+                                        Margin="0,6,0,0"
+                                        Minimum="1500"
+                                        Maximum="5000"
+                                        TickFrequency="500"
+                                        IsSnapToTickEnabled="True"
+                                        TickPlacement="BottomRight"
+                                        Value="3000"
+                                        SmallChange="500"
+                                        LargeChange="500"
+                                        ToolTip="Set the target score for optimization (1500 to 5000 in steps of 500)." />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="3" Margin="0,0,0,8">
+                                <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Performance" />
+                                <ComboBox x:Name="PerformanceComboBox"
+                                          Margin="0,2,0,0"
+                                          SelectedIndex="2"
+                                          ToolTip="Controls worker count. Low uses fewer CPU threads, High uses more for faster runs.">
+                                    <ComboBoxItem Content="Low" />
+                                    <ComboBoxItem Content="Medium" />
+                                    <ComboBoxItem Content="High" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="4" Margin="0,0,0,8">
+                                <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Risk Profile" />
+                                <ComboBox x:Name="RiskProfileComboBox"
+                                          Margin="0,2,0,0"
+                                          SelectedIndex="1"
+                                          ToolTip="Adjust how aggressively the turn policy banks versus continues rolling.">
+                                    <ComboBoxItem Content="Conservative" />
+                                    <ComboBoxItem Content="Balanced" />
+                                    <ComboBoxItem Content="Aggressive" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="5" Margin="0,0,0,8">
+                                <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Scoring Type to Prefer" />
+                                <ComboBox x:Name="ObjectiveComboBox"
+                                          Margin="0,2,0,0"
+                                          SelectedIndex="0"
+                                          ToolTip="Choose which scoring pattern to prioritize when ranking loadouts.">
+                                    <ComboBoxItem Content="MaxScore" />
+                                    <ComboBoxItem Content="SingleOne" />
+                                    <ComboBoxItem Content="SingleFive" />
+                                    <ComboBoxItem Content="Straight" />
+                                    <ComboBoxItem Content="Straight6" />
+                                    <ComboBoxItem Content="Straight1To5" />
+                                    <ComboBoxItem Content="Straight2To6" />
+                                    <ComboBoxItem Content="Straight1To6" />
+                                    <ComboBoxItem Content="Kind3PlusOnes" />
+                                    <ComboBoxItem Content="Kind3PlusTwos" />
+                                    <ComboBoxItem Content="Kind3PlusThrees" />
+                                    <ComboBoxItem Content="Kind3PlusFours" />
+                                    <ComboBoxItem Content="Kind3PlusFives" />
+                                    <ComboBoxItem Content="Kind3PlusSixes" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="6" Orientation="Vertical">
+                                <CheckBox x:Name="EfficiencyCheckBox"
+                                          Content="Enable Efficiency Mode"
+                                          ToolTip="Use staged filtering to reduce expensive full evaluations."
+                                          Margin="0,0,0,8" />
+                                <TextBlock x:Name="PresetStatusTextBlock"
+                                           Margin="0,0,0,8"
+                                           Foreground="{DynamicResource Brush.TextSecondary}"
+                                           Text="Preset: Recommended Defaults" />
+                                <WrapPanel>
+                                    <ToggleButton x:Name="ShowAdvancedToggleButton"
+                                                  Width="170"
+                                                  Content="Show _Advanced"
+                                                  IsChecked="False"
+                                                  ToolTip="Show or hide the Settings and Advanced tabs."
+                                                  Checked="ShowAdvancedToggleButton_OnChecked"
+                                                  Unchecked="ShowAdvancedToggleButton_OnUnchecked" />
+                                    <Button Margin="8,0,0,0"
+                                            Padding="12,6"
+                                            ToolTip="Apply recommended default settings for best general use."
+                                            Click="UseRecommendedDefaultsButton_OnClick"
+                                            Content="Use _Recommended Defaults" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Grid>
+                        </Border>
+                    </DockPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem x:Name="ResultsTab" Header="Results Center">
+                <Grid Margin="14">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
+                            Margin="0,0,0,12"
+                            Padding="10"
+                            CornerRadius="10"
+                            Background="{DynamicResource Brush.Surface}"
+                            BorderBrush="{DynamicResource Brush.Border}"
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="230" />
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="RunAgainFromResultsButton"
+                                    Grid.Column="0"
+                                    Padding="14,7"
+                                    ToolTip="Run a new optimization with the current dice and settings."
+                                    Content="_Run Again"
+                                    Click="OptimizeButton_OnClick" />
+                            <Button x:Name="CancelFromResultsButton"
+                                    Grid.Column="1"
+                                    Margin="8,0,0,0"
+                                    Padding="14,7"
+                                    ToolTip="Request cancellation of the active optimization run."
+                                    Content="_Cancel"
+                                    Click="CancelOptimizeButton_OnClick"
+                                    IsEnabled="False" />
+                            <Button Grid.Column="2"
+                                    Margin="8,0,0,0"
+                                    Padding="14,7"
+                                    ToolTip="Re-rank the latest run results by the selected objective without rerunning simulation. Shows top 50 when Efficiency is off, or final-stage Min Survivors when Efficiency is on."
+                                    Content="Recalculate _Top Results"
+                                    Click="RecalculateTop50Button_OnClick" />
+
+                            <ComboBox x:Name="ResultsObjectiveComboBox"
+                                      Grid.Column="4"
+                                      Margin="12,0,8,0"
+                                      SelectedIndex="0"
+                                      SelectionChanged="ResultsObjectiveComboBox_OnSelectionChanged"
+                                      Foreground="{DynamicResource Brush.TextPrimary}"
+                                      Background="{DynamicResource Brush.SurfaceSubtle}"
+                                      ToolTip="Select which objective is used to rank the visible top results.">
+                                <ComboBoxItem Content="MaxScore" />
+                                <ComboBoxItem Content="SingleOne" />
+                                <ComboBoxItem Content="SingleFive" />
+                                <ComboBoxItem Content="Straight" />
+                                <ComboBoxItem Content="Straight6" />
+                                <ComboBoxItem Content="Straight1To5" />
+                                <ComboBoxItem Content="Straight2To6" />
+                                <ComboBoxItem Content="Straight1To6" />
+                                <ComboBoxItem Content="Kind3PlusOnes" />
+                                <ComboBoxItem Content="Kind3PlusTwos" />
+                                <ComboBoxItem Content="Kind3PlusThrees" />
+                                <ComboBoxItem Content="Kind3PlusFours" />
+                                <ComboBoxItem Content="Kind3PlusFives" />
+                                <ComboBoxItem Content="Kind3PlusSixes" />
+                            </ComboBox>
+
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="1"
+                            Padding="8"
+                            CornerRadius="10"
+                            Background="{DynamicResource Brush.Surface}"
+                            BorderBrush="{DynamicResource Brush.Border}"
+                            BorderThickness="1">
+                        <DataGrid x:Name="ResultsDataGrid"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  ToolTip="Top ranked loadouts and expected metrics from the latest run."
+                                  IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Binding="{Binding Rank}" Width="60" />
+                                <DataGridTextColumn Header="Loadout" Binding="{Binding Loadout}" Width="9*" />
+                                <DataGridTextColumn Header="E[Turns]" Binding="{Binding EvTurns}" Width="*" />
+                                <DataGridTextColumn Header="E[Pts/Turn]" Binding="{Binding EvPoints}" Width="*" />
+                                <DataGridTextColumn Header="P50" Binding="{Binding P50}" Width="*" />
+                                <DataGridTextColumn Header="P90" Binding="{Binding P90}" Width="*" />
+                                <DataGridTextColumn Header="1_ok" Binding="{Binding OneOk}" Width="*" />
+                                <DataGridTextColumn Header="3_ok" Binding="{Binding ThreeOk}" Width="*" />
+                                <DataGridTextColumn Header="4_ok" Binding="{Binding FourOk}" Width="*" />
+                                <DataGridTextColumn Header="5_ok" Binding="{Binding FiveOk}" Width="*" />
+                                <DataGridTextColumn Header="6_ok" Binding="{Binding SixOk}" Width="*" />
+                                <DataGridTextColumn Header="5_s" Binding="{Binding FiveStraight}" Width="*" />
+                                <DataGridTextColumn Header="6_s" Binding="{Binding SixStraight}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem x:Name="OptimizeTab" Header="Settings" Visibility="Collapsed">
+                <Grid Margin="14">
+                    <Border Padding="18"
+                            CornerRadius="10"
+                            Background="{DynamicResource Brush.Surface}"
+                            BorderBrush="{DynamicResource Brush.Border}"
+                            BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock FontSize="20" FontWeight="SemiBold" Text="Optimization Settings" />
+                            <TextBlock Margin="0,3,0,16"
+                                       Foreground="{DynamicResource Brush.TextSecondary}"
+                                       Text="Advanced and secondary tuning controls." />
+                            <UniformGrid Columns="2">
+                                <TextBlock Margin="0,6,8,10" VerticalAlignment="Center" Text="Turns (Efficiency Off)" />
+                                <TextBox x:Name="TurnsTextBox" Margin="8,0,0,10" ToolTip="Applied only when Efficiency Mode is off. When Efficiency Mode is on, each stage uses its own Pilot Turns value from the stage plan." Text="10000" />
+
+                                <TextBlock Margin="0,6,8,10" VerticalAlignment="Center" Text="Risk Profile" />
+                                <ComboBox
+                                          Margin="8,0,0,10"
+                                          SelectedIndex="{Binding ElementName=RiskProfileComboBox, Path=SelectedIndex, Mode=TwoWay}"
+                                          ToolTip="Adjust how aggressively the turn policy banks versus continues rolling.">
+                                    <ComboBoxItem Content="Conservative" />
+                                    <ComboBoxItem Content="Balanced" />
+                                    <ComboBoxItem Content="Aggressive" />
+                                </ComboBox>
+
+                                <TextBlock Margin="0,6,8,10" VerticalAlignment="Center" Text="Efficiency Seed" />
+                                <TextBox x:Name="EfficiencySeedTextBox" Margin="8,0,0,10" ToolTip="Seed used by staged efficiency mode for deterministic pilot sampling behavior." Text="1" />
+                            </UniformGrid>
+                            <WrapPanel Margin="0,12,0,0">
+                                <Button Padding="12,6"
+                                        ToolTip="Reset all settings to recommended defaults."
+                                        Click="ResetSettingsButton_OnClick"
+                                        Content="_Reset Settings" />
+                                <Button Margin="8,0,0,0"
+                                        Padding="12,6"
+                                        ToolTip="Clear cached simulation results."
+                                        Click="ClearCacheButton_OnClick"
+                                        Content="Clear _Cache" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem x:Name="EfficiencyTab" Header="Advanced" Visibility="Collapsed">
+                <Grid Margin="14">
+                    <Border Padding="12"
+                            CornerRadius="10"
+                            Background="{DynamicResource Brush.Surface}"
+                            BorderBrush="{DynamicResource Brush.Border}"
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0"
+                                       Margin="0,0,0,10"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Text="Efficiency Plan (Expert)" />
+
+                            <DataGrid x:Name="EfficiencyDataGrid"
+                                      Grid.Row="1"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      IsReadOnly="False"
+                                      ToolTip="Edit staged efficiency filtering. Higher stages should usually use more turns and stricter keep criteria."
+                                      SelectionMode="Single">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Min Total" Binding="{Binding MinTotal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                    <DataGridTextColumn Header="Pilot Turns" Binding="{Binding PilotTurns, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                    <DataGridTextColumn Header="Keep %" Binding="{Binding KeepPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                    <DataGridTextColumn Header="Epsilon"
+                                                        Binding="{Binding Epsilon, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource FlexibleDoubleConverter}}"
+                                                        Width="*" />
+                                    <DataGridTextColumn Header="Min Survivors" Binding="{Binding MinSurvivors, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <WrapPanel Grid.Row="2" Margin="0,10,0,0">
+                                <Button Padding="12,6" ToolTip="Append a new efficiency stage to the plan." Click="AddStageButton_OnClick" Content="Add Stage" />
+                                <Button Margin="8,0,0,0" Padding="12,6" ToolTip="Remove the currently selected efficiency stage row." Click="RemoveStageButton_OnClick" Content="Remove Stage" />
+                                <Button Margin="8,0,0,0" Padding="12,6" ToolTip="Restore the default efficiency stage plan." Click="ResetStagesButton_OnClick" Content="Reset Defaults" />
+                                <Button x:Name="OptimizeButton"
+                                        Margin="20,0,0,0"
+                                        Padding="14,7"
+                                        ToolTip="Start optimization with current settings."
+                                        Click="OptimizeButton_OnClick"
+                                        Content="_Optimize" />
+                                <Button x:Name="CancelOptimizeButton"
+                                        Margin="8,0,0,0"
+                                        Padding="14,7"
+                                        ToolTip="Request cancellation of the active optimization run."
+                                        Click="CancelOptimizeButton_OnClick"
+                                        Content="_Cancel"
+                                        IsEnabled="False" />
+                            </WrapPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <Border Grid.Row="2"
+                Margin="0,14,0,0"
+                Padding="12,10"
+                CornerRadius="10"
+                Background="{DynamicResource Brush.SurfaceRaised}"
+                BorderBrush="{DynamicResource Brush.BorderStrong}"
+                BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="StatusTextBlock"
+                           Grid.Row="0"
+                           FontSize="13"
+                           Text="Idle" />
+                <ProgressBar x:Name="RunProgressBar"
+                             Grid.Row="1"
+                             Margin="0,8,0,0"
+                             Height="5"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="0" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

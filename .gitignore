@@ -1,0 +1,37 @@
+# Build outputs
+bin/
+obj/
+
+# User and IDE files
+.vs/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+
+# Test and benchmark outputs
+TestResults/
+BenchmarkDotNet.Artifacts/
+benchmarks/results/
+
+# Logs and local diagnostics
+*.log
+*.tmp
+*.cache
+
+# Local dotnet/nuget sandbox state
+.dotnet_home/
+.nuget/
+.dotnet/
+.nuget_packages/
+
+# Local app/runtime artifacts
+cache/
+settings.json
+last_results.json

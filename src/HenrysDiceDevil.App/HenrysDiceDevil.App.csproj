@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\HenrysDiceDevil.Domain\HenrysDiceDevil.Domain.csproj" />
+    <ProjectReference Include="..\HenrysDiceDevil.Simulation\HenrysDiceDevil.Simulation.csproj" />
+    <ProjectReference Include="..\HenrysDiceDevil.Infrastructure\HenrysDiceDevil.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MaterialDesignColors" Version="5.3.0" />
+    <PackageReference Include="MaterialDesignThemes" Version="5.3.0" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\henrys_dice_devil_multi.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\henrys_dice_devil_multi.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\data\kcd2_dice_probabilities.json" Link="data\kcd2_dice_probabilities.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+</Project>
